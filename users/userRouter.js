@@ -8,14 +8,38 @@ const userData = require('./userDb.js');
 
 const router = express.Router();
 
-router.post('/', (req, res) => {
-
-
+router.post('/', async (req, res) => {
+    try {
+        const user = await userData.insert(req.body);
+        res.status(201).json(user);
+      } catch (error) {
+        // log error to server
+        console.log(error);
+        res.status(500).json({
+          message: 'Error adding user',
+        });
+      }
 });
 
-router.post('/:id/posts', (req, res) => {
-
+router.post('/:id/posts', async (req, res) => {
+    try {
+        const userPost = {text: req.body.text, user_id: req.params.id}
+    
+        res.status(200).json(userPost);
+    } catch (error) {
+        // log error to server
+    console.log(error);
+    res.status(500).json({
+        message: 'Error getting the post for the user',
+    });
+    }
 });
+
+
+
+
+    
+
 
 router.get('/', (req, res) => {
     userData
@@ -80,8 +104,24 @@ router.delete('/:id', (req, res) => {
            
 
 router.put('/:id', (req, res) => {
-
-});
+    const { id } = req.params;
+    const { name } = req.body;
+    userData
+      .update(id, { name })
+      .then(res => {
+        if (res === 0) {
+            res.status(404).json({ message: "The user could not be found" });
+        } else {
+          userData.getById(id).then(user => {
+            res.json(user);
+          });
+        }
+      })
+      .catch(error => {
+        res.status(500).json({ message: "Error updating user"})
+      });
+  
+})
 
 //custom middleware
 
