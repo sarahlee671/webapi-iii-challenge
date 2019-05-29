@@ -32,7 +32,6 @@ router.get('/', (req, res) => {
 router.get('/:id', async (req, res) => {
     try {
         const user = await userData.getById(req.params.id);
-        console.log(user.length)
         if (user) {
             res.status(200).json(user);
         } else {
@@ -46,6 +45,20 @@ router.get('/:id', async (req, res) => {
 
 
 router.get('/:id/posts', (req, res) => {
+    console.log(req.params)
+    userData
+        .getUserPosts(req.params.id)
+        .then(userPosts => {
+            if (userPosts === 0) {
+                res.status(404).json({ message: "The post with the specified ID does not exist."}) 
+            } else {
+                res.status(200).json(userPosts)
+            }
+        })
+        .catch(error => {
+            res.status(500).json({ error: "The user posts could not be retrieved."})
+        })
+            
 
 });
 
