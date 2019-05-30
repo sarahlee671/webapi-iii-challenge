@@ -8,38 +8,28 @@ const userData = require('./userDb.js');
 
 const router = express.Router();
 
-router.post('/', async (req, res) => {
+router.post('/', validateUser, async (req, res) => {
     try {
         const user = await userData.insert(req.body);
         res.status(201).json(user);
       } catch (error) {
-        // log error to server
-        console.log(error);
         res.status(500).json({
           message: 'Error adding user',
         });
       }
 });
 
-router.post('/:id/posts', async (req, res) => {
+router.post('/:id/posts', validatePost, async (req, res) => {
     try {
         const userPost = {text: req.body.text, user_id: req.params.id}
     
         res.status(200).json(userPost);
     } catch (error) {
-        // log error to server
-    console.log(error);
     res.status(500).json({
         message: 'Error getting the post for the user',
     });
     }
 });
-
-
-
-
-    
-
 
 router.get('/', (req, res) => {
     userData
@@ -103,7 +93,7 @@ router.delete('/:id', (req, res) => {
 })
            
 
-router.put('/:id', (req, res) => {
+router.put('/:id', validateUserId, (req, res) => {
     const { id } = req.params;
     const { name } = req.body;
     userData
@@ -126,15 +116,38 @@ router.put('/:id', (req, res) => {
 //custom middleware
 
 function validateUserId(req, res, next) {
-
+    userData.getById(req.params.id)
+    .then(user => {
+        if(user) {
+            req.user = id;
+            next();
+        } else {
+            res.status(400).json({ message: "invalid user id"})
+        }
+    })
 };
 
 function validateUser(req, res, next) {
-
+    if (body.length === 0) {
+        res.status(400).json({ message: "missing user data"})
+        const {name} = req.body;
+        if (!name) {
+            res.status(400).json({ message: "missing required name field"})
+        } 
+    }
 };
 
 function validatePost(req, res, next) {
+    if (body.length === 0) {
+        res.status(400).json({message: "missing post data"})
+        const {text} = req.body;
+        if (!text) {
+            res.status(400).json({message: "missing required text field"})
+        }
+    }
 
 };
 
 module.exports = router;
+
+
